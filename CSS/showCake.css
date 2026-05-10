@@ -1,0 +1,566 @@
+:root {
+      --bg: #0d1120;
+      --bg-2: #0a0e1a;
+      --border: rgba(225, 144, 177, 0.22);
+      --text-dim: rgba(220, 222, 235, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      font-family: "DM Sans", ui-sans-serif, sans-serif;
+      background:
+        radial-gradient(ellipse at 30% 0%, rgba(40, 30, 65, 0.6) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(20, 40, 60, 0.5) 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      color: white;
+    }
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .ambient::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(234, 125, 176, 0.055), transparent 26%),
+        radial-gradient(circle at 82% 20%, rgba(167, 124, 236, 0.055), transparent 26%),
+        radial-gradient(circle at 50% 88%, rgba(236, 87, 163, 0.07), transparent 30%);
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      animation: floatP linear infinite;
+    }
+
+    @keyframes floatP {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.22;
+      }
+      50% {
+        transform: translateY(-14px) scale(1.15);
+        opacity: 0.68;
+      }
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: min(92vw, 420px);
+      border-radius: 28px;
+      background: linear-gradient(170deg, rgba(22, 27, 44, 0.92) 0%, rgba(14, 18, 32, 0.96) 100%);
+      border: 1px solid var(--border);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+        0 0 50px rgba(235, 118, 175, 0.05),
+        0 32px 70px rgba(0, 0, 0, 0.38);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 32px 36px;
+      overflow: hidden;
+      isolation: isolate;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: cardIn 0.7s 0.2s ease forwards;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03), transparent 16%),
+        linear-gradient(180deg, rgba(53, 59, 89, 0.06), transparent 40%);
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      bottom: -28px;
+      height: 60px;
+      border-radius: 999px;
+      background: radial-gradient(circle at center, rgba(237, 88, 162, 0.2), transparent 72%);
+      filter: blur(24px);
+      pointer-events: none;
+    }
+
+    @keyframes cardIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .ornaments::before,
+    .ornaments::after,
+    .ornaments span::before,
+    .ornaments span::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(229, 154, 184, 0.09);
+      border-color: rgba(229, 154, 184, 0.09) transparent transparent transparent;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .ornaments::before {
+      left: 14px;
+      bottom: 12px;
+      width: 50px;
+      height: 20px;
+      transform: rotate(-10deg);
+    }
+
+    .ornaments::after {
+      left: 36px;
+      bottom: 28px;
+      width: 20px;
+      height: 38px;
+      transform: rotate(12deg);
+    }
+
+    .ornaments span::before {
+      right: 14px;
+      top: 14px;
+      width: 50px;
+      height: 20px;
+      transform: rotate(170deg);
+    }
+
+    .ornaments span::after {
+      right: 36px;
+      top: 30px;
+      width: 20px;
+      height: 38px;
+      transform: rotate(192deg);
+    }
+
+    .top-label {
+      font-family: "Parisienne", cursive;
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 1.5px;
+      text-transform: none;
+      color: rgba(255, 218, 232, 0.82);
+      margin-bottom: 6px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.6s ease forwards;
+       text-shadow: 0 0 12px rgba(229, 154, 184, 0.25);
+    }
+
+    .cake-wrap {
+      position: relative;
+      width: 200px;
+      height: 220px;
+      margin: 4px 0 8px;
+      cursor: pointer;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.9s ease forwards;
+    }
+
+    .velas {
+      background: #ffffff;
+      border-radius: 10px;
+      position: absolute;
+      top: 84px;
+      left: 50%;
+      margin-left: -3px;
+      width: 6px;
+      height: 44px;
+      transform: translateY(-600px);
+      backface-visibility: hidden;
+      animation: candleIn 500ms 6s ease-out forwards;
+      z-index: 10;
+    }
+
+    .velas::after,
+    .velas::before {
+      background: rgba(255, 0, 0, 0.4);
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 2.2px;
+    }
+
+    .velas::after {
+      top: 25%;
+      left: 0;
+    }
+
+    .velas::before {
+      top: 45%;
+      left: 0;
+    }
+
+    @keyframes candleIn {
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .fuego {
+      border-radius: 100%;
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      margin-left: -2.6px;
+      width: 8px;
+      height: 22px;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .fuego:nth-child(1) { animation: fuego 2s 6.5s infinite; }
+    .fuego:nth-child(2) { animation: fuego 1.5s 6.5s infinite; }
+    .fuego:nth-child(3) { animation: fuego 1s 6.5s infinite; }
+    .fuego:nth-child(4) { animation: fuego 0.5s 6.5s infinite; }
+    .fuego:nth-child(5) { animation: fuego 0.2s 6.5s infinite; }
+
+    @keyframes fuego {
+      0%, 100% {
+        background: rgba(254, 248, 97, 0.5);
+        box-shadow: 0 0 40px 10px rgba(248, 233, 209, 0.2);
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        background: rgba(255, 50, 0, 0.1);
+        box-shadow: 0 0 40px 20px rgba(248, 233, 209, 0.2);
+        transform: translateY(-20px) scale(0);
+      }
+    }
+
+    .smoke {
+      position: absolute;
+      left: 50%;
+      top: -28px;
+      width: 12px;
+      height: 12px;
+      margin-left: -6px;
+      border-radius: 50%;
+      background: rgba(200, 200, 210, 0.7);
+      opacity: 0;
+      pointer-events: none;
+      filter: blur(1.5px);
+    }
+
+    .velas.blown .fuego {
+      animation: none;
+      opacity: 0;
+      transform: translateY(-8px) scale(0);
+    }
+
+    .velas.blown .smoke {
+      animation: smoke 1.5s ease-out forwards;
+    }
+
+    @keyframes smoke {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(0) scale(0.3);
+      }
+      20% {
+        opacity: 0.65;
+        transform: translateX(-50%) translateY(-5px) scale(0.8);
+      }
+      60% {
+        opacity: 0.4;
+        transform: translateX(-45%) translateY(-18px) scale(1.2);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-55%) translateY(-35px) scale(1.8);
+      }
+    }
+
+    #cake {
+      display: block;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      filter:
+        drop-shadow(0 0 18px rgba(168, 134, 121, 0.2))
+        drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
+      transition: filter 0.3s ease;
+    }
+
+    .cake-wrap:hover #cake {
+      filter:
+        drop-shadow(0 0 26px rgba(229, 154, 184, 0.22))
+        drop-shadow(0 8px 28px rgba(0, 0, 0, 0.5));
+    }
+
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(229, 154, 184, 0.35), transparent);
+      margin: 16px 0;
+      opacity: 0;
+      animation: fadeUp 0.5s 1.3s ease forwards;
+    }
+
+    .hint {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(238, 239, 248, 0.35);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hint.reveal {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .message-btn-wrap {
+      margin-top: 14px;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .message-btn-wrap.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      animation: floatButton 3s ease-in-out infinite, glowPulse 3s ease-in-out infinite;
+    }
+
+    .message-btn {
+      text-decoration: none;
+      border: 1px solid rgba(238, 160, 192, 0.35);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(229, 154, 184, 0.12));
+      color: #f7d7e5;
+      font-family: "DM Sans", sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.4px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-block;
+      animation: floatButton 4s ease-in-out infinite, glowPulse 4s ease-in-out infinite;
+      box-shadow: 0 8px 20px rgba(229, 154, 184, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .message-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(238, 160, 192, 0.55);
+      box-shadow: 0 10px 24px rgba(229, 154, 184, 0.2);
+    }
+
+    .message-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ─── FIREWORK CANVASES ──────────────────────────────────────────────────────
+       Both canvases are now position:fixed so they cover the full viewport.
+       fw-inside is no longer clipped by the card's overflow:hidden — rockets
+       can travel from below the card all the way up through the burst point.
+    ───────────────────────────────────────────────────────────────────────────── */
+    .fw-outside,
+    .fw-inside {
+      position: fixed;   /* changed from absolute — covers full viewport */
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;       /* sits above card so bursts are fully visible */
+      pointer-events: none;
+    }
+
+    .fw-outside {
+      display: none;     /* kept hidden, only insideSystem is used */
+    }
+
+    @keyframes floatButton {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% {
+        filter: drop-shadow(0 0 2px rgba(229, 154, 184, 0.1));
+        border-color: rgba(238, 160, 192, 0.3);
+      }
+      50% {
+        filter: drop-shadow(0 0 10px rgba(229, 154, 184, 0.5));
+        border-color: rgba(238, 160, 192, 0.8);
+      }
+    }
+
+
+    /* ─────────────────────────────────────────
+       MICROPHONE UI
+    ───────────────────────────────────────── */
+
+    .mic-ui {
+      width: 100%;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: opacity 0.6s ease, transform 0.6s ease, visibility 0.6s ease;
+    }
+
+    .mic-ui.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .mic-label {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .progress-wrap {
+      width: 100%;
+      max-width: 210px;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow:
+        inset 0 0 10px rgba(255,255,255,0.05),
+        0 0 20px rgba(255,105,180,0.08);
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      transition: width 0.08s linear;
+      background:
+        linear-gradient(
+          90deg,
+          #ff4d88,
+          #ff7eb3,
+          #ffd166
+        );
+      box-shadow:
+        0 0 12px rgba(255,120,180,0.7),
+        0 0 28px rgba(255,120,180,0.4);
+    }
+
+    .mic-status {
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.7);
+      min-height: 18px;
+      transition: all 0.25s ease;
+    }
+
+    /* Candle reactive glow */
+    .velas.listening {
+      box-shadow:
+        0 0 8px rgba(255,180,80,0.5),
+        0 0 18px rgba(255,140,60,0.35),
+        0 0 32px rgba(255,120,40,0.18);
+    }
+
+    /* Flame stronger while blowing */
+    .velas.blowing .fuego {
+      filter:
+        drop-shadow(0 0 6px rgba(255,180,0,0.8))
+        brightness(1.4);
+      transform: scaleY(1.15);
+    }
+
+    /* Flicker before extinguish */
+    .velas.extinguishing .fuego {
+      animation:
+        flickerOut 0.45s ease forwards !important;
+    }
+
+    @keyframes flickerOut {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      20% {
+        opacity: 0.7;
+        transform: translateY(-2px) scale(0.9);
+      }
+      40% {
+        opacity: 1;
+        transform: translateY(1px) scale(1.1);
+      }
+      60% {
+        opacity: 0.4;
+        transform: translateY(-5px) scale(0.7);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-12px) scale(0);
+      }
+    }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      width: 8px;
+      height: 14px;
+      pointer-events: none;
+      z-index: 999;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-10vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+      }
+    }

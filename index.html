@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Letter from your Asad Zia</title>
+
+  <!-- Google Fonts -->
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"> -->
+
+  <!-- External CSS -->
+ <link rel="stylesheet" href="/CSS/style.css"> 
+ <link rel="stylesheet" href="/CSS/global.css"> 
+ <link rel="stylesheet" href="/CSS/transitions.css">
+
+</head>
+<body>
+  <div class="app">
+    <div class="ambient" id="ambient"></div>
+    <div id="bubbleBg" class="bubble-bg"></div>
+
+    <div class="scene">
+      <!-- ENVELOPE -->
+      <section class="panel envelope-panel" id="envelopePanel">
+        <div class="stage">
+          <div class="envelope-outer">
+            <div class="env-glow"></div>
+            <div class="envelope" id="envelope" role="button" tabindex="0">
+
+              <div class="flap">
+                <span class="line top-left"></span>
+                <span class="line top-right"></span>
+                <span class="line mid-left"></span>
+                <span class="line mid-right"></span>
+                <span class="line cdl"></span>
+                <span class="line cdr"></span>
+              </div>
+
+              <div class="divider"></div>
+              <div class="paper-pattern"></div>
+              <div class="shine"></div>
+              <div class="seal"></div>
+              <div class="seal-ring"></div>
+              <div class="corner-swirls"><span></span></div>
+
+              <div class="env-content">
+                <div class="to-block">
+                  To:<span class="name">My Love Nafeesa</span>
+                  <div class="to-line"></div>
+                </div>
+
+                <div class="from-block">
+                  <span>From:</span>
+                  <span class="name">Your Asad Zia</span>
+                  <span class="star"></span>
+                </div>
+
+                <div class="hint">
+                  <div class="chevron">⌃</div>
+                  <div>Tap to open</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COUNTDOWN -->
+      <section class="panel countdown-panel hidden" id="countdownPanel">
+        <div class="countdown-wrap">
+          <div class="countdown-card">
+            <div class="countdown-inner">
+
+              <div class="birthday-label">Something is Comming for You, Nafeesa 💗</div>
+
+              <div class="timer-shell">
+                <div class="dots-ring" id="dotsRing"></div>
+
+                <svg class="ring-svg" viewBox="0 0 280 280">
+                  <circle class="ring-track" cx="140" cy="140" r="110"></circle>
+                  <circle class="ring-progress" id="ringProgress" cx="140" cy="140" r="110"></circle>
+                </svg>
+
+                <div class="timer-center">
+                  <div class="timer-number" id="timerNumber">20</div>
+                  <div class="timer-subtext" id="timerSubtext">seconds left</div>
+                </div>
+              </div>
+
+              <div class="finish-btn-wrap" id="finishBtnWrap">
+                <a href="/HTML/showCake.html" class="next-page-btn" id="nextPageBtn">
+                    Click for Surprize!💗
+                </a>
+                <button class="restart-link" id="restartBtn">Open again</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+ 
+
+  <!-- External JS -->
+  <script src="/JS/script.js"></script>
+  <script src="/JS/global.js"></script>
+  <script src="/JS/transitions.js"></script>
+
+</body>
+</html>

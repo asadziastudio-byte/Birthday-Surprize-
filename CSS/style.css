@@ -1,0 +1,832 @@
+/* ============================================================
+   style.css — Envelope & Countdown Page Styles
+   All "hover" effects are permanently active so they work
+   on both desktop AND mobile (phones have no hover state).
+   ============================================================ */
+
+/* ─── GOOGLE FONTS ────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Allura&family=Great+Vibes&family=Parisienne&family=Sacramento&display=swap');
+
+
+/* ─── DESIGN TOKENS (CSS Variables) ──────────────────────── */
+/* Change these values to retheme the whole page in one place */
+:root {
+  --bg: #0d1120;                          /* main background */
+  --bg-2: #0a0e1a;                        /* gradient end background */
+  --card: #141826;                        /* card surface colour */
+  --line: rgba(214, 133, 164, 0.18);      /* faint envelope fold lines */
+  --border: rgba(225, 144, 177, 0.22);    /* default border colour */
+  --border-strong: rgba(240, 154, 190, 0.48); /* highlighted border */
+  --pink: #e59ab8;                        /* primary accent colour */
+  --pink-soft: rgba(229, 154, 184, 0.15); /* very faint pink fill */
+  --pink-glow: rgba(233, 123, 174, 0.4);  /* glow halo colour */
+  --text-dim: rgba(220, 222, 235, 0.55);  /* muted body text */
+  --green: #00d14f;                       /* countdown ring colour */
+
+  /* SVG ring maths — keep in sync with the <circle r="110"> in HTML */
+  --timer-size: 280;        /* px — outer diameter of the ring SVG */
+  --stroke: 10;             /* px — thickness of the progress ring */
+  --radius: 110;            /* px — must match r="110" in the SVG */
+  --circumference: 691.1504;/* 2 × π × 110 — full ring length in px */
+}
+
+
+/* ─── RESET ───────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+
+/* ─── BODY / PAGE BACKGROUND ─────────────────────────────── */
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;   /* horizontally & vertically centre everything */
+  overflow: hidden;
+  color: white;
+  font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  /* layered gradient gives depth: purple top-left, blue bottom-right */
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(40, 30, 65, 0.6) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(20, 40, 60, 0.5) 0%, transparent 50%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+}
+
+
+/* ─── AMBIENT LAYER ───────────────────────────────────────── */
+/* Fixed overlay that adds subtle coloured glows + floating particles.
+   pointer-events: none means it never blocks clicks. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Three soft radial glows in the corners/centre */
+.ambient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(234, 125, 176, 0.055), transparent 26%),
+    radial-gradient(circle at 82% 20%, rgba(167, 124, 236, 0.055), transparent 26%),
+    radial-gradient(circle at 50% 88%, rgba(236,  87, 163, 0.07),  transparent 30%);
+}
+
+/* Individual floating dust particles (created in JS) */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  animation: floatParticle linear infinite;
+}
+
+/* Particle float animation — gentle bob up and down */
+@keyframes floatParticle {
+  0%   { transform: translateY(0)      scale(1);    opacity: 0.25; }
+  50%  { transform: translateY(-14px)  scale(1.15); opacity: 0.7; }
+  100% { transform: translateY(0)      scale(1);    opacity: 0.25; }
+}
+
+
+/* ─── APP / SCENE LAYOUT ──────────────────────────────────── */
+/* .app fills the viewport; .scene is the centred content area */
+.app {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  isolation: isolate; /* creates a new stacking context */
+}
+
+.scene {
+  position: relative;
+  width: min(94vw, 920px);
+  min-height: 580px;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+
+
+/* ─── PANEL TRANSITIONS ───────────────────────────────────── */
+/* Both panels (envelope + countdown) live in the same space.
+   The .hidden class fades/shrinks the inactive panel away. */
+.panel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.75s ease, transform 0.75s ease, visibility 0.75s ease;
+}
+
+.panel.hidden {
+  opacity: 0;
+  visibility: hidden;   /* removed from tab order when hidden */
+  pointer-events: none;
+  transform: scale(0.95);
+}
+
+
+/* ─── ENVELOPE STAGE ──────────────────────────────────────── */
+/* Centers the envelope card with padding so it doesn't touch edges */
+.stage {
+  display: grid;
+  place-items: center;
+  padding: 48px 20px;
+}
+
+.envelope-outer {
+  position: relative; /* anchor for .env-glow */
+}
+
+
+/* ─── ENVELOPE GLOW (below the card) ─────────────────────── */
+/* A blurred pink ellipse that sits underneath the envelope.
+   Previously only showed on :hover — now always visible. */
+.env-glow {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -28px;
+  height: 60px;
+  border-radius: 999px;
+  background: radial-gradient(circle at center, rgba(237, 88, 162, 0.35), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+
+  /* ✅ Always ON — was previously opacity:0 and only shown on hover */
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+
+/* ─── ENVELOPE CARD ───────────────────────────────────────── */
+.envelope {
+  position: relative;
+  width: min(72vw, 500px);
+  aspect-ratio: 1.45 / 1;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #1c2238 0%, #151929 100%);
+  overflow: hidden;
+  cursor: pointer;
+  isolation: isolate;
+  will-change: transform;
+
+  /* ✅ Always ON — the "lifted" state that was previously only on :hover */
+  transform: translateY(-5px) scale(1.012);
+  border: 1px solid var(--border-strong);
+  box-shadow:
+    0 0 0 1px rgba(237, 151, 187, 0.12) inset,
+    0 0 28px rgba(235, 118, 175, 0.16),
+    0 24px 56px rgba(0, 0, 0, 0.38);
+
+  transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Keep hover state identical so desktop still feels interactive */
+.envelope:hover {
+  transform: translateY(-5px) scale(1.012);
+  border-color: var(--border-strong);
+  box-shadow:
+    0 0 0 1px rgba(237, 151, 187, 0.12) inset,
+    0 0 28px rgba(235, 118, 175, 0.16),
+    0 24px 56px rgba(0, 0, 0, 0.38);
+}
+
+/* Animation played when the user taps/clicks to open */
+.envelope.opening {
+  animation: envelopeOpen 0.85s ease forwards;
+  pointer-events: none; /* prevent double-tap during animation */
+}
+
+
+/* ─── ENVELOPE FOLD LINES ─────────────────────────────────── */
+/* Thin decorative lines that simulate envelope creases */
+.flap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.flap .line {
+  position: absolute;
+  background: var(--line);
+}
+
+/* Each line is rotated to form the classic diamond envelope pattern */
+.line.top-left  { top:0; left:0;   width:52%; height:1px; transform-origin:left center;  transform:rotate(32deg);  }
+.line.top-right { top:0; right:0;  width:52%; height:1px; transform-origin:right center; transform:rotate(-32deg); }
+.line.mid-left  { left:0;  top:50%; width:52%; height:1px; transform-origin:left center;  transform:rotate(-24deg); }
+.line.mid-right { right:0; top:50%; width:52%; height:1px; transform-origin:right center; transform:rotate(24deg);  }
+.line.cdl { top:20.5%; left:49.9%;  width:27%; height:1px; transform-origin:left center;  transform:rotate(24deg);  opacity:.9; }
+.line.cdr { top:20.5%; right:49.9%; width:27%; height:1px; transform-origin:right center; transform:rotate(-24deg); opacity:.9; }
+
+/* Horizontal divider between upper and lower envelope halves */
+.divider {
+  position: absolute;
+  left:0; right:0; top:50.2%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(214,133,164,0.12), transparent);
+  z-index: 2;
+}
+
+/* Subtle repeating dot pattern on the lower half (like textured paper) */
+.paper-pattern {
+  position: absolute;
+  inset: 50% 0 0 0;
+  background: radial-gradient(circle at 8px 8px, rgba(255,255,255,0.013) 1.3px, transparent 1.4px) 0 0 / 18px 18px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+
+/* ─── SHINE SWEEP ─────────────────────────────────────────── */
+/* A diagonal light beam that sweeps across the envelope.
+   Previously triggered only on :hover — now loops on page load. */
+.shine {
+  position: absolute;
+  top: 50%; left: 10%; right: 10%;bottom: 30%;
+  width: 36%; height: 55%;
+  transform: skewX(-14deg);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.02)  20%,
+    rgba(255,255,255,0.1)   50%,
+    rgba(255,255,255,0.02)  80%,
+    transparent 100%
+  );
+  filter: blur(2px);
+  pointer-events: none;
+  z-index: 4;
+
+  /* ✅ Always ON — was opacity:0 and only animated on :hover */
+  opacity: 1;
+  animation: shineSweep 3s ease infinite; /* loops every 3 s */
+}
+
+/* Desktop hover re-triggers the same sweep (no visual change) */
+.envelope:hover .shine {
+  animation: shineSweep 0.85s ease forwards;
+}
+
+
+/* ─── WAX SEAL ────────────────────────────────────────────── */
+.seal {
+  position: absolute;
+  top: 34%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 66px; height: 66px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 40%),
+    rgba(228, 149, 180, 0.22);
+  box-shadow:
+    0 0 0 9px rgba(230,150,181,0.07),
+    0 0 0 1px rgba(230,150,181,0.1) inset;
+  display: grid;
+  place-items: center;
+  z-index: 5;
+  transition: transform 0.35s ease;
+
+  /* ✅ Always ON — pulse animation was previously only on :hover */
+  animation: sealPulse 1.6s ease-in-out infinite;
+}
+
+/* Inner filled circle of the seal */
+.seal::before {
+  content: "";
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #eba8c3, #d688a9);
+  box-shadow: 0 2px 8px rgba(255,164,198,0.16) inset, 0 -2px 8px rgba(0,0,0,0.2) inset;
+  display: block;
+}
+
+/* Heart icon on the seal */
+.seal::after {
+  content: "♥";
+  position: absolute;
+  color: #fff5fb;
+  font-size: 15px;
+  font-weight: 700;
+  filter: drop-shadow(0 0 3px rgba(255,255,255,0.18));
+}
+
+/* Outer decorative ring around the seal */
+.seal-ring {
+  position: absolute;
+  top: 34%; left: 50%;
+  width: 86px; height: 86px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(229,154,184,0.16);
+  pointer-events: none;
+  z-index: 4;
+
+  /* ✅ Always ON — ring pulse was previously only on :hover */
+  animation: sealRingPulse 1.6s ease-in-out infinite;
+}
+
+
+/* ─── ENVELOPE TEXT CONTENT ───────────────────────────────── */
+.env-content {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}
+
+/* "To: My Love Nafeesa" block */
+.to-block {
+  position: absolute;
+  left: 128px; top: 57%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  font-size: 16px;
+  letter-spacing: 0.1px;
+  font-weight: 300;
+}
+
+.to-block .name {
+  display: inline-block;
+  margin-left: 5px;
+  color: var(--pink);
+  font-size: 33px;
+  font-family: 'Great Vibes', 'Allura', cursive;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.8px;
+  transform: translateY(3px);
+  /* Soft romantic glow on the recipient's name */
+  text-shadow:
+    0 0  6px rgba(255,182,193,0.35),
+    0 0 12px rgba(255,192,203,0.18);
+}
+
+/* Underline beneath the recipient's name */
+.to-line {
+  height: 1px;
+  margin-top: 5px;
+  background: linear-gradient(90deg, rgba(229,154,184,0.6), rgba(229,154,184,0.9), rgba(229,154,184,0.2));
+  width: 100%;
+  border-radius: 999px;
+  box-shadow: 0 0 6px rgba(229,154,184,0.4), 0 0 14px rgba(229,154,184,0.2);
+}
+
+/* "From: Your Asad Zia" block */
+.from-block {
+  position: absolute;
+  right: 36px; bottom: 42px;
+  color: var(--text-dim);
+  font-size: 15px;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.from-block .name {
+  color: var(--pink);
+  font-size: 23px;
+  font-family: 'Sacramento', cursive;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  transform: translateY(2px);
+  text-shadow:
+    0 0  5px rgba(255,182,193,0.25),
+    0 0 10px rgba(255,192,203,0.15);
+}
+
+/* Small decorative star (cross shape made with ::before/::after) */
+.star {
+  display: inline-block;
+  width: 11px; height: 11px;
+  position: relative;
+  opacity: 0.65;
+}
+.star::before, .star::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  background: rgba(229,154,184,0.7);
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+}
+.star::before { width: 9px;   height: 1.2px; } /* horizontal bar */
+.star::after  { width: 1.2px; height: 9px;   } /* vertical bar */
+
+/* "Tap to open" hint label at the bottom-left */
+.hint {
+  position: absolute;
+  left: 44px; bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  color: rgba(238,239,248,0.5);
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.3px;
+  z-index: 7;
+}
+
+/* Up-pointing chevron arrow above the hint text */
+.chevron {
+  font-size: 19px;
+  color: var(--pink);
+  margin-left: 24px;
+  opacity: 0.9;
+
+  /* ✅ Always ON — float animation was previously only on :hover */
+  animation: chevronFloat 1s ease-in-out infinite;
+}
+
+
+/* ─── CORNER SWIRL ORNAMENTS ──────────────────────────────── */
+/* Four decorative curved arcs in the bottom corners of the envelope */
+.corner-swirls::before, .corner-swirls::after,
+.corner-swirls span::before, .corner-swirls span::after {
+  content: "";
+  position: absolute;
+  border: 1px solid rgba(229,154,184,0.1);
+  border-color: rgba(229,154,184,0.1) transparent transparent transparent;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+.corner-swirls::before      { left:12px;  bottom:10px; width:42px; height:18px; transform:rotate(-10deg); }
+.corner-swirls::after       { left:32px;  bottom:26px; width:18px; height:32px; transform:rotate(10deg);  }
+.corner-swirls span::before { right:12px; bottom:10px; width:42px; height:18px; transform:rotate(10deg);  }
+.corner-swirls span::after  { right:32px; bottom:26px; width:18px; height:32px; transform:rotate(-10deg); }
+
+
+/* ─── COUNTDOWN PANEL ─────────────────────────────────────── */
+/* Shown after the envelope is opened */
+.countdown-wrap {
+  width: min(92vw, 560px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.countdown-card {
+  position: relative;
+  width: 100%;
+  min-height: 520px;
+  border-radius: 28px;
+  background: linear-gradient(170deg, rgba(22,27,44,0.9) 0%, rgba(14,18,32,0.95) 100%);
+  border: 1px solid rgba(231,145,181,0.14);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.02) inset,
+    0 0 50px rgba(235,118,175,0.05),
+    0 32px 70px rgba(0,0,0,0.38);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Top gloss sheen on the countdown card */
+.countdown-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03), transparent 16%),
+    linear-gradient(180deg, rgba(53,59,89,0.06), transparent 40%);
+  pointer-events: none;
+}
+
+/* Pink glow blob underneath the countdown card */
+.countdown-card::after {
+  content: "";
+  position: absolute;
+  left:10%; right:10%; bottom:-28px;
+  height: 60px;
+  border-radius: 999px;
+  background: radial-gradient(circle at center, rgba(237,88,162,0.22), transparent 72%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+/* Inner flex column that stacks label → ring → button */
+.countdown-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+  padding: 40px 30px;
+  width: 100%;
+}
+
+/* Italic script heading above the ring */
+.birthday-label {
+  font-family: 'Great Vibes', 'Allura', cursive;
+  font-size: 36px;
+  font-weight: 400;
+  color: #f0b0ca;
+  letter-spacing: 1px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0.95;
+  margin-bottom: 6px;
+  text-shadow:
+    0 0  8px rgba(255, 182, 210, 0.45),
+    0 0 20px rgba(229, 154, 184, 0.25),
+    0 0 40px rgba(229, 154, 184, 0.10);
+  animation: labelBreath 3.5s ease-in-out infinite;
+}
+
+@keyframes labelBreath {
+  0%, 100% {
+    text-shadow:
+      0 0  8px rgba(255, 182, 210, 0.45),
+      0 0 20px rgba(229, 154, 184, 0.25),
+      0 0 40px rgba(229, 154, 184, 0.10);
+    opacity: 0.92;
+  }
+  50% {
+    text-shadow:
+      0 0 12px rgba(255, 182, 210, 0.70),
+      0 0 28px rgba(229, 154, 184, 0.45),
+      0 0 55px rgba(229, 154, 184, 0.22);
+    opacity: 1;
+  }
+}
+
+/* ─── TIMER RING ──────────────────────────────────────────── */
+/* Outer container sized by --timer-size variable */
+.timer-shell {
+  position: relative;
+  width:  calc(var(--timer-size) * 1px);
+  height: calc(var(--timer-size) * 1px);
+  display: grid;
+  place-items: center;
+}
+
+/* The SVG is rotated -90° so the ring starts at the top */
+.ring-svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+/* Static grey background circle of the ring */
+.ring-track {
+  fill: none;
+  stroke: rgba(255,255,255,0.05);
+  stroke-width: var(--stroke);
+}
+
+/* Faint tick marks around the ring (60 ticks = 1 per second) */
+.ring-ticks {
+  fill: none;
+  stroke: rgba(255,255,255,0.06);
+  stroke-width: 2;
+  stroke-dasharray: 1 34.1;
+}
+
+/* Animated progress arc — JS updates stroke-dashoffset each second */
+.ring-progress {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: var(--stroke);
+  stroke-linecap: round;
+  stroke-dasharray: var(--circumference);
+  stroke-dashoffset: 0;
+  filter:
+    drop-shadow(0 0  7px rgba(0,255,132,0.4))
+    drop-shadow(0 0 18px rgba(0,255,132,0.15));
+  transition: stroke-dashoffset 1s linear, stroke 1s linear, filter 1s linear;
+}
+
+/* Big number + small label in the centre of the ring */
+.timer-center {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.timer-number {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 80px;
+  line-height: 1;
+  font-weight: 300;
+  letter-spacing: -2px;
+  color: #f3f3f6;
+  text-shadow: 0 4px 0 rgba(0,0,0,0.15), 0 0 12px rgba(255,255,255,0.06);
+  user-select: none;
+  transition: color 0.5s ease;
+}
+
+.timer-subtext {
+  font-size: 11px;
+  letter-spacing: 2.8px;
+  text-transform: uppercase;
+  color: rgba(234,236,244,0.45);
+  font-weight: 300;
+}
+
+/* ─── DOT MARKERS RING ────────────────────────────────────── */
+/* 10 small pink dots arranged in a circle inside the main ring */
+.dots-ring {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dot-mark {
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(229,154,184,0.25);
+  top: 50%; left: 50%;
+  transform-origin: 0 0;
+}
+
+
+/* ─── FINISH BUTTON (appears when countdown reaches 0) ───── */
+/* Hidden by default; JS adds .show class to reveal it */
+.finish-btn-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.finish-btn-wrap.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Primary CTA pill button — links to the next page */
+.next-page-btn {
+  position: relative;
+  padding: 14px 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(238,160,192,0.3);
+  background: linear-gradient(135deg, rgba(235,142,183,0.18) 0%, rgba(180,110,150,0.12) 100%);
+  color: #f8e6ef;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: 0 0 20px rgba(237,126,179,0.1), 0 4px 16px rgba(0,0,0,0.2);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Inner gloss sheen on the button */
+.next-page-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07), transparent);
+  pointer-events: none;
+}
+
+/* Lift + brighten button on desktop hover */
+.next-page-btn:hover {
+  transform: translateY(-3px);
+  border-color: rgba(245,176,206,0.45);
+  box-shadow: 0 0 28px rgba(237,126,179,0.18), 0 8px 24px rgba(0,0,0,0.28);
+}
+
+.next-page-btn:active { transform: translateY(-1px); }
+
+/* Arrow icon inside the button */
+.btn-icon {
+  margin-left: 8px;
+  opacity: 0.85;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.next-page-btn:hover .btn-icon { transform: translateX(3px); }
+
+/* "Open again" subtle text link below the button */
+.restart-link {
+  background: none;
+  border: none;
+  color: rgba(229,154,184,0.45);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(229,154,184,0.2);
+}
+.restart-link:hover { color: rgba(229,154,184,0.75); }
+
+
+/* ─── COUNTDOWN CORNER ORNAMENTS ──────────────────────────── */
+/* Same decorative arc technique as the envelope swirls */
+.countdown-ornaments::before, .countdown-ornaments::after,
+.countdown-ornaments span::before, .countdown-ornaments span::after {
+  content: "";
+  position: absolute;
+  border: 1px solid rgba(229,154,184,0.09);
+  border-color: rgba(229,154,184,0.09) transparent transparent transparent;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.countdown-ornaments::before       { left:16px;  bottom:14px; width:52px; height:22px; transform:rotate(-10deg);  }
+.countdown-ornaments::after        { left:38px;  bottom:30px; width:22px; height:40px; transform:rotate(12deg);   }
+.countdown-ornaments span::before  { right:16px; top:16px;    width:52px; height:22px; transform:rotate(170deg);  }
+.countdown-ornaments span::after   { right:38px; top:32px;    width:22px; height:40px; transform:rotate(192deg);  }
+
+
+/* ─── KEYFRAME ANIMATIONS ─────────────────────────────────── */
+
+/* Chevron bounces up and down to invite the user to tap */
+@keyframes chevronFloat {
+  0%,100% { transform: translateY(0);    }
+  50%      { transform: translateY(-5px); }
+}
+
+/* White light beam sweeps from left to right across the envelope */
+@keyframes shineSweep {
+  0%   { left: -46%; opacity: 0; }
+  10%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { left: 110%; opacity: 0; }
+}
+
+/* Wax seal gently pulses (scale up/down) */
+@keyframes sealPulse {
+  0%,100% { transform: translate(-50%,-50%) scale(1);    }
+  50%      { transform: translate(-50%,-50%) scale(1.05); }
+}
+
+/* Outer ring around seal pulses slightly out of phase */
+@keyframes sealRingPulse {
+  0%,100% { transform: translate(-50%,-50%) scale(1);    opacity: 0.5; }
+  50%      { transform: translate(-50%,-50%) scale(1.1); opacity: 0.9; }
+}
+
+/* Envelope shrinks + blurs away when clicked/tapped */
+@keyframes envelopeOpen {
+  0%   { transform: scale(1)     translateY(0);    opacity: 1; filter: saturate(1.1); }
+  50%  { transform: scale(1.04)  translateY(-6px); opacity: 1; }
+  100% { transform: scale(0.88)  translateY(10px); opacity: 0; filter: blur(10px);   }
+}
+
+/* Unused sparkle animation (kept for future use) */
+@keyframes floatSparkle {
+  0%,100% { transform:translateY(0);     opacity:.25; }
+  50%      { transform:translateY(-11px); opacity:.75; }
+}
+
+
+/* ─── RESPONSIVE — SMALL SCREENS ──────────────────────────── */
+@media (max-width: 680px) {
+  .envelope       { width: min(92vw, 480px); border-radius: 16px; }
+  .to-block       { left: 24%; top: 57%; font-size: 14px; }
+  .to-block .name,
+  .from-block .name { font-size: 23px; }
+  .from-block     { right: 22px; bottom: 34px; font-size: 13px; }
+  .hint           { left: 26px; bottom: 14px; font-size: 11px; }
+  .seal           { width: 58px; height: 58px; }
+  .seal::before   { width: 36px; height: 36px; }
+  .seal-ring      { width: 76px; height: 76px; }
+  .countdown-card { min-height: 480px; border-radius: 22px; }
+  .birthday-label { font-size: 26px; }
+  .timer-shell    { transform: scale(0.86); }
+  .timer-number   { font-size: 72px; }
+}
+
+/* ─── NOTE ─────────────────────────────────────────────────── */
+/*
+   The old @media (hover: none) and (pointer: coarse) block has been
+   REMOVED. All animated effects that previously only triggered on
+   :hover are now set directly on the base element styles above,
+   so they work identically on first load for BOTH:
+     • Desktop (mouse) users
+     • Mobile (touch) users
+   No extra media query is needed.
+*/
